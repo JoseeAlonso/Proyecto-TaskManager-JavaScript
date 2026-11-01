@@ -106,6 +106,30 @@ function renderizar(){
     detalle.textContent = 'Prioridad' + tarea.prioridad;
     tarjeta.append(detalle, document.createElement('br'));
 
+    for (const [accion, texto] of [
+      ['anterior', '<- Anterior ->'], 
+      ['siguiente', 'Siguiente ->'], 
+      ['eliminar', 'Eliminar']]) 
+      {
 
+        const boton = document.createElement('button');
+
+        boton.type = 'button';
+
+        boton.dataset.accion = accion;
+
+        boton.textContent = texto;
+
+        const indice = estados.indexOf(tarea.estado);
+
+        boton.disabled = 
+          (accion === 'anterior' && indice === 0 || (accion === 'siguiente' && indice === 2));
+
+        tarjeta.append(boton);  
+    }
+
+    $('#' + tarea.estado).append(tarjeta);
+
+    //TODO QUEDASTE POR AQUÍ (24:52)
   }
 }
