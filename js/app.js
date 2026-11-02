@@ -73,17 +73,15 @@ document.addEventListener("tareas:cambiadas", (event) => {
   console.log("Detalles: ", event.detail);
 });
 
-function renderizar(){
+function renderizar() {
   for (const estado of estados) {
-    $('#' + estado).replaceChildren();
+    $("#" + estado).replaceChildren();
   }
 
-  const filtro = $('#filtro').value;
+  const filtro = $("#filtro").value;
 
-  for (const tarea of tareas){
-
-    if ( filtro !== 'todas' && tarea.prioridad !== filtro) {
-
+  for (const tarea of tareas) {
+    if (filtro !== "todas" && tarea.prioridad !== filtro) {
       continue;
     }
 
@@ -91,45 +89,75 @@ function renderizar(){
       continue;
     }
 
-    const tarjeta = document.createElement('article');
-    tarjeta.className = 'tarea';
+    const tarjeta = document.createElement("article");
+    tarjeta.className = "tarea";
     tarjeta.dataset.id = tarea.id;
     tarjeta.dataset.prioridad = tarea.prioridad;
 
-
-    const titulo = document.createElement('h4');
+    const titulo = document.createElement("h4");
     titulo.textContent = tarea.titulo;
     tarjeta.append(titulo);
 
-
-    const detalle = document.createElement('small');
-    detalle.textContent = 'Prioridad' + tarea.prioridad;
-    tarjeta.append(detalle, document.createElement('br'));
+    const detalle = document.createElement("small");
+    detalle.textContent = "Prioridad:" + tarea.prioridad;
+    tarjeta.append(detalle, document.createElement("br"));
 
     for (const [accion, texto] of [
-      ['anterior', '<- Anterior ->'], 
-      ['siguiente', 'Siguiente ->'], 
-      ['eliminar', 'Eliminar']]) 
-      {
+      ["anterior", "<- Anterior ->"],
+      ["siguiente", "Siguiente ->"],
+      ["eliminar", "Eliminar"],
+    ]) {
+      const boton = document.createElement("button");
 
-        const boton = document.createElement('button');
+      boton.type = "button";
 
-        boton.type = 'button';
+      boton.dataset.accion = accion;
 
-        boton.dataset.accion = accion;
+      boton.textContent = texto;
 
-        boton.textContent = texto;
+      const indice = estados.indexOf(tarea.estado);
 
-        const indice = estados.indexOf(tarea.estado);
+      boton.disabled =
+        (accion === "anterior" && indice === 0) ||
+        (accion === "siguiente" && indice === 2);
 
-        boton.disabled = 
-          (accion === 'anterior' && indice === 0 || (accion === 'siguiente' && indice === 2));
-
-        tarjeta.append(boton);  
+      tarjeta.append(boton);
     }
 
-    $('#' + tarea.estado).append(tarjeta);
-
-    //TODO QUEDASTE POR AQUÍ (24:52)
+    $("#" + tarea.estado).append(tarjeta);
   }
+  notificarCambio();
 }
+
+$("#formulario").addEventListener('submit', event => {
+
+  event.preventDefault();
+
+  const titulo = $("#titulo").value.trim();
+
+  if (!titulo) {
+    avisar("Introduce un título válido");
+    $("#titulo").focus();
+    return;
+  }
+
+  tareas.push({
+    id: siguienteId++,
+    titulo,
+    prioridad: $("#prioridad").value,
+    estado: "pendiente",
+  });
+
+  $("#formulario").reset();
+
+  $('#contador').textContent='0/80';
+
+  avisar("Tarea añadida");
+
+  renderizar();
+
+  $("#titulo").focus();
+});
+
+//llamadas
+renderizar();
