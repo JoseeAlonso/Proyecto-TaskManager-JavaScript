@@ -129,8 +129,7 @@ function renderizar() {
   notificarCambio();
 }
 
-$("#formulario").addEventListener('submit', event => {
-
+$("#formulario").addEventListener("submit", (event) => {
   event.preventDefault();
 
   const titulo = $("#titulo").value.trim();
@@ -150,7 +149,7 @@ $("#formulario").addEventListener('submit', event => {
 
   $("#formulario").reset();
 
-  $('#contador').textContent='0/80';
+  $("#contador").textContent = "0/80";
 
   avisar("Tarea añadida");
 
@@ -158,6 +157,109 @@ $("#formulario").addEventListener('submit', event => {
 
   $("#titulo").focus();
 });
+
+$("#buscar").addEventListener(
+  "input",
+  debounce((event) => {
+    busqueda = event.target.value.toLocaleLowerCase().trim();
+
+    renderizar();
+  }, 300),
+);
+
+$("#tablero").addEventListener("click", (event) => {
+  const boton = event.target.closest("button[data-accion]");
+
+  if (!boton || !event.currentTarget.contains(boton)) {
+    return;
+  }
+
+  const tarjeta = boton.closest(".tarea");
+
+  if (!tarjeta) {
+    return;
+  }
+
+  const id = Number(tarjeta.dataset.id);
+
+  const indice = tareas.findIndex((t) => t.id === id);
+
+  if (indice < 0) {
+    return;
+  }
+
+  const accion = boton.dataset.accion;
+
+  if (accion === "eliminar") {
+    tareas.splice(indice, 1);
+  } else {
+    const actual = estados.indexOf(tareas[indice].estado);
+
+    tareas[indice].estado = estados[actual + (accion === "siguiente" ? 1 : -1)];
+
+    avisar("Acción realizada: " + accion);
+
+    renderizar();
+  }
+});
+
+$('#tablero').addEventListener('dblclick', event =>{
+
+  const titulo = event.target.closest('.tarea h4');
+
+  if (!titulo || !$('#tablero').contains(titulo)) {
+    return;
+  }
+
+  const tarea = tareas.find(
+    t => t.id === Number(titulo.closest('.tarea').dataset.id)
+  );
+
+  if (!tarea){
+    return;
+  }
+
+  const nuevo = prompt('Nuevo título: ', tarea.titulo);
+
+  if (!nuevo?.trim()) {
+    return;
+  }
+
+  tarea.titulo = nuevo.trim().slice(0,80);
+  
+  renderizar();
+
+  avisar('Título actualizado');
+});
+
+document.addEventListener('keydown', event =>{
+
+  if (event.key === 'Escape' && 
+      document.activeElement.matches('input,select')
+  ) {
+    document.activeElement.blur();
+  }
+
+  if (event.key === '/'){
+    event.preventDefault();
+    $('#buscar').focus();
+  }
+
+  const editando = 
+      event.target.matches('input,select,textarea') || 
+      event.target.isContentEditable;
+
+  if (editando ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+  ) {
+    return;
+  }
+
+});
+
+
 
 //llamadas
 renderizar();
